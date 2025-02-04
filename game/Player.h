@@ -1197,7 +1197,7 @@ ID_INLINE idAnimatedEntity* idPlayer::GetWeaponWorldModel( void ) const {
 	return weaponWorldModel;
 }
 
-ID_INLINE int idPlayer::GetCurrentWeapon( void ) const {
+ ID_INLINE int idPlayer::GetCurrentWeapon( void ) const {
 	return currentWeapon;
 }
 
