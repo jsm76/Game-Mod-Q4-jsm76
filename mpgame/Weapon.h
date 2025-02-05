@@ -365,7 +365,7 @@ public:
 	int								ammoType;
 	int								ammoRequired;		// amount of ammo to use each shot.  0 means weapon doesn't need ammo.
 	int								clipSize;			// 0 means no reload
-	int								ammoClip;
+	int								ammoCFlip;
 	int								lowAmmo;			// if ammo in clip hits this threshold, snd_
 	int								maxAmmo;		
 

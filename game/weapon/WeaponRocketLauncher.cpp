@@ -99,10 +99,10 @@ void rvWeaponRocketLauncher::Spawn ( void ) {
 	spawnArgs.GetFloat ( "lockRange", "0", guideRange );
 
 	spawnArgs.GetFloat ( "lockSlowdown", ".25", f );
-	attackDict.GetFloat ( "speed", "0", guideSpeedFast );
+	attackDict.GetFloat ( "speed", "3", guideSpeedFast );
 	guideSpeedSlow = guideSpeedFast * f;
 	
-	reloadRate = SEC2MS ( spawnArgs.GetFloat ( "reloadRate", ".8" ) );
+	reloadRate = SEC2MS ( spawnArgs.GetFloat ( "reloadRate", "0.2" ) );
 	
 	guideAccelTime = SEC2MS ( spawnArgs.GetFloat ( "lockAccelTime", ".25" ) );
 	
@@ -117,7 +117,7 @@ void rvWeaponRocketLauncher::Spawn ( void ) {
 	animNum = viewModel->GetAnimator()->GetAnim ( "reload" );
 	if ( animNum ) {
 		anim = (idAnim*)viewModel->GetAnimator()->GetAnim ( animNum );
-		rate = (float)anim->Length() / (float)SEC2MS(spawnArgs.GetFloat ( "reloadRate", ".8" ));
+		rate = (float)anim->Length() / (float)SEC2MS(spawnArgs.GetFloat ( "reloadRate", "0.2" ));
 		anim->SetPlaybackRate ( rate );
 	}
 
@@ -214,7 +214,7 @@ void rvWeaponRocketLauncher::OnLaunchProjectile ( idProjectile* proj ) {
 	rvWeapon::OnLaunchProjectile(proj);
 
 	// Double check that its actually a guided projectile
-	if ( !proj || !proj->IsType ( idGuidedProjectile::GetClassType() ) ) {
+	if (!proj || !proj->IsType(idGuidedProjectile::GetClassType())) {
 		return;
 	}
 
@@ -410,11 +410,14 @@ stateResult_t rvWeaponRocketLauncher::State_Idle( const stateParms_t& parms ) {
 	};	
 	switch ( parms.stage ) {
 		case STAGE_INIT:
-			if ( !AmmoAvailable ( ) ) {
-				SetStatus ( WP_OUTOFAMMO );
+			//Make the gun be ready to fire
+			SetStatus(WP_READY);
+			/*if (!AmmoAvailable()) {
+				 SetStatus ( WP_OUTOFAMMO );
 			} else {
-				SetStatus ( WP_READY );
+				 SetStatus ( WP_READY );
 			}
+			*/
 		
 			PlayCycle( ANIMCHANNEL_LEGS, "idle", parms.blendFrames );
 			return SRESULT_STAGE ( STAGE_WAIT );
@@ -446,14 +449,17 @@ stateResult_t rvWeaponRocketLauncher::State_Fire ( const stateParms_t& parms ) {
 	switch ( parms.stage ) {
 		case STAGE_INIT:
 			nextAttackTime = gameLocal.time + (fireRate * owner->PowerUpModifier ( PMOD_FIRERATE ));		
-			Attack ( false, 1, spread, 0, 1.0f );
+			Attack ( false, 5, spread, 0.5f, 100.f );
+			ammoClip = clipSize;
+			AddToClip(ClipSize());//Refill the gun //Fail
+			ammoClip = clipSize; //new check, refill the gun
 			PlayAnim ( ANIMCHANNEL_LEGS, "fire", parms.blendFrames );	
 			return SRESULT_STAGE ( STAGE_WAIT );
 	
-		case STAGE_WAIT:			
+		case STAGE_WAIT:
+			AddToClip(ClipSize()); //Refill the gun //Fail
 			if ( wsfl.attack && gameLocal.time >= nextAttackTime && ( gameLocal.isClient || AmmoInClip ( ) ) && !wsfl.lowerWeapon ) {
 				SetState ( "Fire", 0 );
-				return SRESULT_DONE;
 			}
 			if ( gameLocal.time > nextAttackTime && AnimDone ( ANIMCHANNEL_LEGS, 4 ) ) {
 				SetState ( "Idle", 4 );
@@ -478,6 +484,8 @@ stateResult_t rvWeaponRocketLauncher::State_Rocket_Idle ( const stateParms_t& pa
 	
 	switch ( parms.stage ) {
 		case STAGE_INIT:
+			AddToClip(ClipSize());//Refill the gun //Fail
+			SetClip(10);
 			if ( AmmoAvailable ( ) <= AmmoInClip() ) {
 				PlayAnim( ANIMCHANNEL_TORSO, "idle_empty", parms.blendFrames );
 				idleEmpty = true;
@@ -487,7 +495,7 @@ stateResult_t rvWeaponRocketLauncher::State_Rocket_Idle ( const stateParms_t& pa
 			return SRESULT_STAGE ( STAGE_WAIT );
 		
 		case STAGE_WAIT:
-			if ( AmmoAvailable ( ) > AmmoInClip() ) {
+			/*if ( AmmoAvailable ( ) > AmmoInClip() ) {
 				if ( idleEmpty ) {
 					SetRocketState ( "Rocket_Reload", 0 );
 					return SRESULT_DONE;
@@ -504,8 +512,8 @@ stateResult_t rvWeaponRocketLauncher::State_Rocket_Idle ( const stateParms_t& pa
 						return SRESULT_DONE;
 					}				
 				}
-			}
-			return SRESULT_WAIT;
+			}*/
+			return SRESULT_DONE;
 	}
 	return SRESULT_ERROR;
 }

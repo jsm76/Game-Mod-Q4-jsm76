@@ -2465,9 +2465,9 @@ rvWeapon::AddToClip
 void rvWeapon::AddToClip ( int amount ) {
 	int ammoAvail;
 
- 	if ( gameLocal.isClient ) {
+ 	/*if ( gameLocal.isClient ) {
  		return;
- 	}
+ 	}*/
 
 	ammoClip += amount;
 	if ( ammoClip > clipSize ) {
