@@ -199,6 +199,7 @@ idInventory::Clear
 ==============
 */
 void idInventory::Clear( void ) {
+	//inventory clear all data related to the player
 	maxHealth			= 0;
 	weapons				= 0;
 	carryOverWeapons	= 0;
@@ -209,7 +210,7 @@ void idInventory::Clear( void ) {
 
 	memset( ammo, 0, sizeof( ammo ) );
 
-	ClearPowerUps();
+	ClearPowerUps(); //Clear power Ups
 
 	memset( weaponMods, 0, sizeof(weaponMods) );
 
